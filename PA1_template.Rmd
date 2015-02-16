@@ -1,25 +1,169 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
 output: 
-  html_document:
-    keep_md: true
+html_document:
+keep_md: true
 ---
 
 
 ## Loading and preprocessing the data
 
+First, let's extract activity.csv from activity.zip, if we haven't already done
+so, and read the data into R.
 
+```{r Load and Peek at Data}
+
+dataFilePath = "./activity.csv"
+dataZipFilePath = "./activity.zip"
+
+if (!file.exists(dataFilePath)){
+    unzip(dataZipFilePath)
+    }
+
+activityRawData = read.csv(dataFilePath,header = TRUE)
+activityRawData[283:292,]
+
+```
+
+From the example rows above, it looks like our data consists of the number of
+steps, followed by a date, then the start time of a 5 minute interval in the
+form hhmm.  Let's make sure that date is in a date format that R can recognize.
+
+```{r Combine date/time columns}
+activityRawData$date = as.Date(activityRawData$date,'%Y-%m-%d')
+```
+
+Finally, let's subset away the data that is missing (NA).
+
+```{r}
+activityCompleteCases = activityRawData[!is.na(activityRawData$steps),]
+```
 
 ## What is mean total number of steps taken per day?
 
+Here we compute the total number of steps taken each day, and display the results
+in a histogram.
 
+```{r}
+
+byDate = activityCompleteCases$date
+stepsPerDay = by(activityCompleteCases$steps,byDate,sum)
+hist(stepsPerDay,col="red",breaks=5,main="Histogram of Steps per Day",xlab = "Steps per Day")
+
+meanStepsPerDay = mean(stepsPerDay[!is.na(stepsPerDay)])
+meanStepsPerDay
+
+medianStepsPerDay = median(stepsPerDay[!is.na(stepsPerDay)])
+medianStepsPerDay
+
+```
+
+In this dataset, the mean number of steps taken per day is `r format(meanStepsPerDay,nsmall = 2)` and the median is `r medianStepsPerDay`.
 
 ## What is the average daily activity pattern?
 
+Let us compute the average number of steps taken during each time interval, and 
+display the results as a time-series plot.
 
+```{r Average Daily Activity Pattern}
+byInterval = activityCompleteCases$interval
+meanStepsPerInterval = by(activityCompleteCases$steps,byInterval,mean)
 
-## Imputing missing values
+plot(names(meanStepsPerInterval),meanStepsPerInterval,
+     type="l",
+     lwd=3,
+     main = "Average Number of Steps by Time of Day",
+     xlab = "Time Interval (hhmm)",
+     ylab = "Average Number of Steps")
 
+maxIntervalAverage = max(meanStepsPerInterval)
+maxIntervalAverage
 
+mostActiveInterval = names(meanStepsPerInterval)[meanStepsPerInterval == maxIntervalAverage]
+mostActiveInterval
+```
+
+For this dataset, the subject is most active between 8:35 and 8:40, with an average 206.17 steps in that interval.
+
+## Inputting missing values
+
+It looks like the missing values always seem to cover days.  So we can fill them
+in if we assume that the subject's activity level was comparable to other days
+for which we do have data, and that they simply neglected to turn their monitor
+on.  To this end, let's use the median for each time interval to fill in the data
+for the missing days.
+
+First, let's try to verify our assertion.
+
+```{r Missing Values}
+missingRows = activityRawData[is.na(activityRawData$steps),]
+numberMissing = nrow(missingRows)
+numberMissing
+
+daysMissing = unique(missingRows$date)
+numberDaysMissing = length(daysMissing)
+numberDaysMissing
+```
+
+So we have `r numberMissing` missing values, spread out over `r numberDaysMissing`
+days.  Each day consists of 24x12 = 288 five-minute periods, so `r numberDaysMissing`
+missing days would give us 288x`r numberDaysMissing`=`r numberMissing` missing values.
+This tells us that only complete days are missing, since if one day had fewer than
+288 missing values, another day would have to have more, which is not possible.
+
+So let's fill in the missing values using the mean for each interval.  First, 
+we copy our data into a new dataset.  Then we add a column to the table for the
+interval mean, then replace the value of 'steps' with the value in 'intervalMean'
+whenever 'steps' is NA.
+
+```{r}
+activityDataNARM = activityRawData
+
+activityDataNARM$intervalMean = meanStepsPerInterval
+activityDataNARM$steps[is.na(activityDataNARM$steps)] = activityDataNARM$intervalMean[is.na(activityDataNARM$steps)]
+
+byDate = activityDataNARM$date
+stepsPerDay = by(activityDataNARM$steps,byDate,sum)
+hist(stepsPerDay,col="red",breaks=5,main="Histogram of Steps per Day",xlab = "Steps per Day")
+
+meanStepsPerDay = mean(stepsPerDay[!is.na(stepsPerDay)])
+meanStepsPerDay
+
+medianStepsPerDay = median(stepsPerDay[!is.na(stepsPerDay)])
+medianStepsPerDay
+```
+
+Using this reconstruction, the mean number of steps per day is unchanged, but the
+median has become the mean.  The histrogram distribution is almost the same, except
+that the bin containing the mean has become more frequent, since we decided to 
+classify all days where we had no data as 'average' days.
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+To see the difference in activity between weekdays and weekends, first we make a
+new column initialized to the factor "weekday", and set any observation
+taken on saturday and sunday to "weekend"
+
+```{r}
+activityDataNARM$isWeekend = as.factor("weekday")
+levels(activityDataNARM$isWeekend) = c("weekday","weekend")
+
+activityDataNARM$isWeekend[weekdays(activityDataNARM$date) == as.factor("Saturday")] = as.factor("weekend")
+activityDataNARM$isWeekend[weekdays(activityDataNARM$date) == as.factor("Sunday")] = as.factor("weekend")
+```
+
+Now that we can tell the weekdays from the weekends, let's make a time-series plot for each factor, and compare the activity levels.
+
+```{r}
+byIntervalAndWeekend = activityDataNARM[,c("interval","isWeekend")]
+meanStepsPerInterval = tapply(activityDataNARM$steps,byIntervalAndWeekend,mean)
+
+plot(row.names(meanStepsPerInterval),meanStepsPerInterval[,"weekday"],type="l",lwd=3,main = "Average Number of Steps by Time of Day",xlab = "Time Interval (hhmm)",ylab = "Average Number of Steps",col="red")
+lines(row.names(meanStepsPerInterval),meanStepsPerInterval[,"weekend"],lwd=3,col="blue")
+legend("topright",c("Weekday","Weekend"),lty=c(1,1),col=c("Red","Blue"),bty="n")
+```
+
+It appears that the subject makes a point to do some walking in the morning around 8:30am
+on weekdays and weekends.  However, they move more consistently on weekends througout the
+day, whereas on weekdays the steps are more concentrated in the morning and afternoon.
+This could be explained by the subject being at work or school during the day on weekends.
