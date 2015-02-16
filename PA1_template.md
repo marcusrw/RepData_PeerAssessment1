@@ -180,7 +180,8 @@ whenever 'steps' is NA.
 activityDataNARM = activityRawData
 
 activityDataNARM$intervalMean = meanStepsPerInterval
-activityDataNARM$steps[is.na(activityDataNARM$steps)] = activityDataNARM$intervalMean[is.na(activityDataNARM$steps)]
+activityDataNARM$steps[is.na(activityDataNARM$steps)] =
+    activityDataNARM$intervalMean[is.na(activityDataNARM$steps)]
 
 byDate = activityDataNARM$date
 stepsPerDay = by(activityDataNARM$steps,byDate,sum)
@@ -238,9 +239,22 @@ Now that we can tell the weekdays from the weekends, let's make a time-series pl
 byIntervalAndWeekend = activityDataNARM[,c("interval","isWeekend")]
 meanStepsPerInterval = tapply(activityDataNARM$steps,byIntervalAndWeekend,mean)
 
-plot(row.names(meanStepsPerInterval),meanStepsPerInterval[,"weekday"],type="l",lwd=3,main = "Average Number of Steps by Time of Day",xlab = "Time Interval (hhmm)",ylab = "Average Number of Steps",col="red")
-lines(row.names(meanStepsPerInterval),meanStepsPerInterval[,"weekend"],lwd=3,col="blue")
-legend("topright",c("Weekday","Weekend"),lty=c(1,1),col=c("Red","Blue"),bty="n")
+plot(row.names(meanStepsPerInterval),meanStepsPerInterval[,"weekday"],
+     type="l",
+     lwd=3,
+     main = "Average Number of Steps by Time of Day",
+     xlab = "Time Interval (hhmm)",
+     ylab = "Average Number of Steps",
+     col="red")
+
+lines(row.names(meanStepsPerInterval),meanStepsPerInterval[,"weekend"],
+      lwd=3,
+      col="blue")
+
+legend("topright",c("Weekday","Weekend"),
+       lty=c(1,1),
+       col=c("Red","Blue"),
+       bty="n")
 ```
 
 ![plot of chunk Show Weekdays vs Weekends](figure/Show Weekdays vs Weekends-1.png) 
