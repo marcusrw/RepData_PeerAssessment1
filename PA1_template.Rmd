@@ -48,7 +48,11 @@ in a histogram.
 
 byDate = activityCompleteCases$date
 stepsPerDay = by(activityCompleteCases$steps,byDate,sum)
-hist(stepsPerDay,col="red",breaks=5,main="Histogram of Steps per Day",xlab = "Steps per Day")
+hist(stepsPerDay,
+     col="red",
+     breaks=5,
+     main="Histogram of Steps per Day",
+     xlab = "Steps per Day")
 
 meanStepsPerDay = mean(stepsPerDay[!is.na(stepsPerDay)])
 meanStepsPerDay
@@ -58,7 +62,8 @@ medianStepsPerDay
 
 ```
 
-In this dataset, the mean number of steps taken per day is `r format(meanStepsPerDay,nsmall = 2)` and the median is `r medianStepsPerDay`.
+In this data set, the mean number of steps taken per day is
+`r format(meanStepsPerDay,nsmall = 2)` and the median is `r medianStepsPerDay`.
 
 ## What is the average daily activity pattern?
 
@@ -83,7 +88,7 @@ mostActiveInterval = names(meanStepsPerInterval)[meanStepsPerInterval == maxInte
 mostActiveInterval
 ```
 
-For this dataset, the subject is most active between 8:35 and 8:40, with an average 206.17 steps in that interval.
+For this data set, the subject is most active between 8:35 and 8:40, with an average 206.17 steps in that interval.
 
 ## Inputting missing values
 
@@ -112,7 +117,7 @@ This tells us that only complete days are missing, since if one day had fewer th
 288 missing values, another day would have to have more, which is not possible.
 
 So let's fill in the missing values using the mean for each interval.  First, 
-we copy our data into a new dataset.  Then we add a column to the table for the
+we copy our data into a new data set.  Then we add a column to the table for the
 interval mean, then replace the value of 'steps' with the value in 'intervalMean'
 whenever 'steps' is NA.
 
@@ -124,7 +129,11 @@ activityDataNARM$steps[is.na(activityDataNARM$steps)] = activityDataNARM$interva
 
 byDate = activityDataNARM$date
 stepsPerDay = by(activityDataNARM$steps,byDate,sum)
-hist(stepsPerDay,col="red",breaks=5,main="Histogram of Steps per Day",xlab = "Steps per Day")
+hist(stepsPerDay,
+     col="red",
+     breaks=5,
+     main="Histogram of Steps per Day",
+     xlab = "Steps per Day")
 
 meanStepsPerDay = mean(stepsPerDay[!is.na(stepsPerDay)])
 meanStepsPerDay
@@ -134,7 +143,7 @@ medianStepsPerDay
 ```
 
 Using this reconstruction, the mean number of steps per day is unchanged, but the
-median has become the mean.  The histrogram distribution is almost the same, except
+median has become the mean.  The histogram distribution is almost the same, except
 that the bin containing the mean has become more frequent, since we decided to 
 classify all days where we had no data as 'average' days.
 
@@ -142,7 +151,7 @@ classify all days where we had no data as 'average' days.
 
 To see the difference in activity between weekdays and weekends, first we make a
 new column initialized to the factor "weekday", and set any observation
-taken on saturday and sunday to "weekend"
+taken on Saturday and Sunday to "weekend"
 
 ```{r}
 activityDataNARM$isWeekend = as.factor("weekday")
@@ -164,6 +173,6 @@ legend("topright",c("Weekday","Weekend"),lty=c(1,1),col=c("Red","Blue"),bty="n")
 ```
 
 It appears that the subject makes a point to do some walking in the morning around 8:30am
-on weekdays and weekends.  However, they move more consistently on weekends througout the
+on weekdays and weekends.  However, they move more consistently on weekends throughout the
 day, whereas on weekdays the steps are more concentrated in the morning and afternoon.
 This could be explained by the subject being at work or school during the day on weekends.
