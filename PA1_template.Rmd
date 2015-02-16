@@ -95,7 +95,7 @@ For this data set, the subject is most active between 8:35 and 8:40, with an ave
 It looks like the missing values always seem to cover days.  So we can fill them
 in if we assume that the subject's activity level was comparable to other days
 for which we do have data, and that they simply neglected to turn their monitor
-on.  To this end, let's use the median for each time interval to fill in the data
+on.  To this end, let's use the mean for each time interval to fill in the data
 for the missing days.
 
 First, let's try to verify our assertion.
