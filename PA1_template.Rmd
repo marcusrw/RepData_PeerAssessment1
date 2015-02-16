@@ -35,7 +35,7 @@ activityRawData$date = as.Date(activityRawData$date,'%Y-%m-%d')
 
 Finally, let's subset away the data that is missing (NA).
 
-```{r}
+```{r removeNAs}
 activityCompleteCases = activityRawData[!is.na(activityRawData$steps),]
 ```
 
@@ -44,7 +44,7 @@ activityCompleteCases = activityRawData[!is.na(activityRawData$steps),]
 Here we compute the total number of steps taken each day, and display the results
 in a histogram.
 
-```{r}
+```{r Show Steps per Day}
 
 byDate = activityCompleteCases$date
 stepsPerDay = by(activityCompleteCases$steps,byDate,sum)
@@ -121,7 +121,7 @@ we copy our data into a new data set.  Then we add a column to the table for the
 interval mean, then replace the value of 'steps' with the value in 'intervalMean'
 whenever 'steps' is NA.
 
-```{r}
+```{r Display Mean/Median Steps per Day}
 activityDataNARM = activityRawData
 
 activityDataNARM$intervalMean = meanStepsPerInterval
@@ -153,7 +153,7 @@ To see the difference in activity between weekdays and weekends, first we make a
 new column initialized to the factor "weekday", and set any observation
 taken on Saturday and Sunday to "weekend"
 
-```{r}
+```{r Add isWeekend Factor}
 activityDataNARM$isWeekend = as.factor("weekday")
 levels(activityDataNARM$isWeekend) = c("weekday","weekend")
 
@@ -163,7 +163,7 @@ activityDataNARM$isWeekend[weekdays(activityDataNARM$date) == as.factor("Sunday"
 
 Now that we can tell the weekdays from the weekends, let's make a time-series plot for each factor, and compare the activity levels.
 
-```{r}
+```{r Show Weekdays vs Weekends}
 byIntervalAndWeekend = activityDataNARM[,c("interval","isWeekend")]
 meanStepsPerInterval = tapply(activityDataNARM$steps,byIntervalAndWeekend,mean)
 

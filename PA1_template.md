@@ -70,7 +70,7 @@ hist(stepsPerDay,
      xlab = "Steps per Day")
 ```
 
-![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2-1.png) 
+![plot of chunk Show Steps per Day](figure/Show Steps per Day-1.png) 
 
 ```r
 meanStepsPerDay = mean(stepsPerDay[!is.na(stepsPerDay)])
@@ -191,7 +191,7 @@ hist(stepsPerDay,
      xlab = "Steps per Day")
 ```
 
-![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png) 
+![plot of chunk Display Mean/Median Steps per Day](figure/Display Mean/Median Steps per Day-1.png) 
 
 ```r
 meanStepsPerDay = mean(stepsPerDay[!is.na(stepsPerDay)])
@@ -243,7 +243,7 @@ lines(row.names(meanStepsPerInterval),meanStepsPerInterval[,"weekend"],lwd=3,col
 legend("topright",c("Weekday","Weekend"),lty=c(1,1),col=c("Red","Blue"),bty="n")
 ```
 
-![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png) 
+![plot of chunk Show Weekdays vs Weekends](figure/Show Weekdays vs Weekends-1.png) 
 
 It appears that the subject makes a point to do some walking in the morning around 8:30am
 on weekdays and weekends.  However, they move more consistently on weekends throughout the
