@@ -50,7 +50,7 @@ byDate = activityCompleteCases$date
 stepsPerDay = by(activityCompleteCases$steps,byDate,sum)
 hist(stepsPerDay,
      col="red",
-     breaks=5,
+     breaks=10,
      main="Histogram of Steps per Day",
      xlab = "Steps per Day")
 
@@ -132,7 +132,7 @@ byDate = activityDataNARM$date
 stepsPerDay = by(activityDataNARM$steps,byDate,sum)
 hist(stepsPerDay,
      col="red",
-     breaks=5,
+     breaks=10,
      main="Histogram of Steps per Day",
      xlab = "Steps per Day")
 
@@ -164,16 +164,41 @@ activityDataNARM$isWeekend[weekdays(activityDataNARM$date) == as.factor("Sunday"
 
 Now that we can tell the weekdays from the weekends, let's make a time-series plot for each factor, and compare the activity levels.
 
-```{r Show Weekdays vs Weekends}
+```{r Show Weekdays vs Weekends Panel, fig.height=8}
 byIntervalAndWeekend = activityDataNARM[,c("interval","isWeekend")]
 meanStepsPerInterval = tapply(activityDataNARM$steps,byIntervalAndWeekend,mean)
 
+par(mfrow = c(2,1))
+plot(row.names(meanStepsPerInterval),meanStepsPerInterval[,"weekday"],
+     type="l",
+     lwd=3,
+     main = "Average Steps (Weekday)",
+     xlab = "Time Interval (hhmm)",
+     ylab = "# Steps",
+     col="red")
+
+plot(row.names(meanStepsPerInterval),meanStepsPerInterval[,"weekend"],
+     type="l",
+     lwd=3,
+     main = "Average Steps (Weekend)",
+     xlab = "Time Interval (hhmm)",
+     ylab = "# Steps",
+     col="blue")
+
+box(which = "outer",col = "black")
+```
+
+It looks like there is some difference in activity level between weekdays and
+weekends.  To better illustrate this let's plot these time-series together on
+one set of axes.
+
+```{r Show Weekdays vs Weekends Together}
 plot(row.names(meanStepsPerInterval),meanStepsPerInterval[,"weekday"],
      type="l",
      lwd=3,
      main = "Average Number of Steps by Time of Day",
      xlab = "Time Interval (hhmm)",
-     ylab = "Average Number of Steps",
+     ylab = "# Steps",
      col="red")
 
 lines(row.names(meanStepsPerInterval),meanStepsPerInterval[,"weekend"],
@@ -186,7 +211,7 @@ legend("topright",c("Weekday","Weekend"),
        bty="n")
 ```
 
-It appears that the subject makes a point to do some walking in the morning around 8:30am
-on weekdays and weekends.  However, they move more consistently on weekends throughout the
-day, whereas on weekdays the steps are more concentrated in the morning and afternoon.
-This could be explained by the subject being at work or school during the day on weekends.
+It appears that the subject makes a point to do some walking in the morning
+around 8:30am on weekdays and weekends.  However, they move more consistently on weekends throughout the day, whereas on weekdays the steps are more concentrated
+in the morning and afternoon.  This could be explained by the subject being at
+work or school during the day on weekdays.
