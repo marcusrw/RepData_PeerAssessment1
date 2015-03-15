@@ -1,265 +1,234 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-html_document:
-keep_md: true
----
+Loading and preprocessing the data
+----------------------------------
 
+First, let's extract activity.csv from activity.zip, if we haven't
+already done so, and read the data into R.
 
-## Loading and preprocessing the data
+    dataFilePath = "./activity.csv"
+    dataZipFilePath = "./activity.zip"
 
-First, let's extract activity.csv from activity.zip, if we haven't already done
-so, and read the data into R.
+    if (!file.exists(dataFilePath)){
+        unzip(dataZipFilePath)
+        }
 
+    activityRawData = read.csv(dataFilePath,header = TRUE)
+    activityRawData[283:292,]
 
-```r
-dataFilePath = "./activity.csv"
-dataZipFilePath = "./activity.zip"
+    ##     steps       date interval
+    ## 283    NA 2012-10-01     2330
+    ## 284    NA 2012-10-01     2335
+    ## 285    NA 2012-10-01     2340
+    ## 286    NA 2012-10-01     2345
+    ## 287    NA 2012-10-01     2350
+    ## 288    NA 2012-10-01     2355
+    ## 289     0 2012-10-02        0
+    ## 290     0 2012-10-02        5
+    ## 291     0 2012-10-02       10
+    ## 292     0 2012-10-02       15
 
-if (!file.exists(dataFilePath)){
-    unzip(dataZipFilePath)
-    }
+From the example rows above, it looks like our data consists of the
+number of steps, followed by a date, then the start time of a 5 minute
+interval in the form hhmm. Let's make sure that date is in a date format
+that R can recognize.
 
-activityRawData = read.csv(dataFilePath,header = TRUE)
-activityRawData[283:292,]
-```
-
-```
-##     steps       date interval
-## 283    NA 2012-10-01     2330
-## 284    NA 2012-10-01     2335
-## 285    NA 2012-10-01     2340
-## 286    NA 2012-10-01     2345
-## 287    NA 2012-10-01     2350
-## 288    NA 2012-10-01     2355
-## 289     0 2012-10-02        0
-## 290     0 2012-10-02        5
-## 291     0 2012-10-02       10
-## 292     0 2012-10-02       15
-```
-
-From the example rows above, it looks like our data consists of the number of
-steps, followed by a date, then the start time of a 5 minute interval in the
-form hhmm.  Let's make sure that date is in a date format that R can recognize.
-
-
-```r
-activityRawData$date = as.Date(activityRawData$date,'%Y-%m-%d')
-```
+    activityRawData$date = as.Date(activityRawData$date,'%Y-%m-%d')
 
 Finally, let's subset away the data that is missing (NA).
 
+    activityCompleteCases = activityRawData[!is.na(activityRawData$steps),]
 
-```r
-activityCompleteCases = activityRawData[!is.na(activityRawData$steps),]
-```
+What is mean total number of steps taken per day?
+-------------------------------------------------
 
-## What is mean total number of steps taken per day?
+Here we compute the total number of steps taken each day, and display
+the results in a histogram.
 
-Here we compute the total number of steps taken each day, and display the results
-in a histogram.
+    byDate = activityCompleteCases$date
+    stepsPerDay = by(activityCompleteCases$steps,byDate,sum)
+    hist(stepsPerDay,
+         col="red",
+         breaks=10,
+         main="Histogram of Steps per Day",
+         xlab = "Steps per Day")
 
+![](PA1_template_files/figure-markdown_strict/Show%20Steps%20per%20Day-1.png)
 
-```r
-byDate = activityCompleteCases$date
-stepsPerDay = by(activityCompleteCases$steps,byDate,sum)
-hist(stepsPerDay,
-     col="red",
-     breaks=5,
-     main="Histogram of Steps per Day",
-     xlab = "Steps per Day")
-```
+    meanStepsPerDay = mean(stepsPerDay[!is.na(stepsPerDay)])
+    meanStepsPerDay
 
-![plot of chunk Show Steps per Day](figure/Show Steps per Day-1.png) 
+    ## [1] 10766.19
 
-```r
-meanStepsPerDay = mean(stepsPerDay[!is.na(stepsPerDay)])
-meanStepsPerDay
-```
+    medianStepsPerDay = median(stepsPerDay[!is.na(stepsPerDay)])
+    medianStepsPerDay
 
-```
-## [1] 10766.19
-```
+    ## [1] 10765
 
-```r
-medianStepsPerDay = median(stepsPerDay[!is.na(stepsPerDay)])
-medianStepsPerDay
-```
+In this data set, the mean number of steps taken per day is 10766.19 and
+the median is 10765.
 
-```
-## [1] 10765
-```
+What is the average daily activity pattern?
+-------------------------------------------
 
-In this data set, the mean number of steps taken per day is
-10766.19 and the median is 10765.
+Let us compute the average number of steps taken during each time
+interval, and display the results as a time-series plot.
 
-## What is the average daily activity pattern?
+    byInterval = activityCompleteCases$interval
+    meanStepsPerInterval = by(activityCompleteCases$steps,byInterval,mean)
 
-Let us compute the average number of steps taken during each time interval, and 
-display the results as a time-series plot.
+    plot(names(meanStepsPerInterval),meanStepsPerInterval,
+         type="l",
+         lwd=3,
+         main = "Average Number of Steps by Time of Day",
+         xlab = "Time Interval (hhmm)",
+         ylab = "Average Number of Steps")
 
+![](PA1_template_files/figure-markdown_strict/Average%20Daily%20Activity%20Pattern-1.png)
 
-```r
-byInterval = activityCompleteCases$interval
-meanStepsPerInterval = by(activityCompleteCases$steps,byInterval,mean)
+    maxIntervalAverage = max(meanStepsPerInterval)
+    maxIntervalAverage
 
-plot(names(meanStepsPerInterval),meanStepsPerInterval,
-     type="l",
-     lwd=3,
-     main = "Average Number of Steps by Time of Day",
-     xlab = "Time Interval (hhmm)",
-     ylab = "Average Number of Steps")
-```
+    ## [1] 206.1698
 
-![plot of chunk Average Daily Activity Pattern](figure/Average Daily Activity Pattern-1.png) 
+    mostActiveInterval = names(meanStepsPerInterval)[meanStepsPerInterval == maxIntervalAverage]
+    mostActiveInterval
 
-```r
-maxIntervalAverage = max(meanStepsPerInterval)
-maxIntervalAverage
-```
+    ## [1] "835"
 
-```
-## [1] 206.1698
-```
+For this data set, the subject is most active between 8:35 and 8:40,
+with an average 206.17 steps in that interval.
 
-```r
-mostActiveInterval = names(meanStepsPerInterval)[meanStepsPerInterval == maxIntervalAverage]
-mostActiveInterval
-```
+Inputting missing values
+------------------------
 
-```
-## [1] "835"
-```
-
-For this data set, the subject is most active between 8:35 and 8:40, with an average 206.17 steps in that interval.
-
-## Inputting missing values
-
-It looks like the missing values always seem to cover days.  So we can fill them
-in if we assume that the subject's activity level was comparable to other days
-for which we do have data, and that they simply neglected to turn their monitor
-on.  To this end, let's use the mean for each time interval to fill in the data
-for the missing days.
+It looks like the missing values always seem to cover days. So we can
+fill them in if we assume that the subject's activity level was
+comparable to other days for which we do have data, and that they simply
+neglected to turn their monitor on. To this end, let's use the mean for
+each time interval to fill in the data for the missing days.
 
 First, let's try to verify our assertion.
 
+    missingRows = activityRawData[is.na(activityRawData$steps),]
+    numberMissing = nrow(missingRows)
+    numberMissing
 
-```r
-missingRows = activityRawData[is.na(activityRawData$steps),]
-numberMissing = nrow(missingRows)
-numberMissing
-```
+    ## [1] 2304
 
-```
-## [1] 2304
-```
+    daysMissing = unique(missingRows$date)
+    numberDaysMissing = length(daysMissing)
+    numberDaysMissing
 
-```r
-daysMissing = unique(missingRows$date)
-numberDaysMissing = length(daysMissing)
-numberDaysMissing
-```
+    ## [1] 8
 
-```
-## [1] 8
-```
+So we have 2304 missing values, spread out over 8 days. Each day
+consists of 24x12 = 288 five-minute periods, so 8 missing days would
+give us 288x8=2304 missing values. This tells us that only complete days
+are missing, since if one day had fewer than 288 missing values, another
+day would have to have more, which is not possible.
 
-So we have 2304 missing values, spread out over 8
-days.  Each day consists of 24x12 = 288 five-minute periods, so 8
-missing days would give us 288x8=2304 missing values.
-This tells us that only complete days are missing, since if one day had fewer than
-288 missing values, another day would have to have more, which is not possible.
+So let's fill in the missing values using the mean for each interval.
+First, we copy our data into a new data set. Then we add a column to the
+table for the interval mean, then replace the value of 'steps' with the
+value in 'intervalMean' whenever 'steps' is NA.
 
-So let's fill in the missing values using the mean for each interval.  First, 
-we copy our data into a new data set.  Then we add a column to the table for the
-interval mean, then replace the value of 'steps' with the value in 'intervalMean'
-whenever 'steps' is NA.
+    activityDataNARM = activityRawData
 
+    activityDataNARM$intervalMean = meanStepsPerInterval
+    activityDataNARM$steps[is.na(activityDataNARM$steps)] =
+        activityDataNARM$intervalMean[is.na(activityDataNARM$steps)]
 
-```r
-activityDataNARM = activityRawData
+    byDate = activityDataNARM$date
+    stepsPerDay = by(activityDataNARM$steps,byDate,sum)
+    hist(stepsPerDay,
+         col="red",
+         breaks=10,
+         main="Histogram of Steps per Day",
+         xlab = "Steps per Day")
 
-activityDataNARM$intervalMean = meanStepsPerInterval
-activityDataNARM$steps[is.na(activityDataNARM$steps)] =
-    activityDataNARM$intervalMean[is.na(activityDataNARM$steps)]
+![](PA1_template_files/figure-markdown_strict/Display%20Mean/Median%20Steps%20per%20Day-1.png)
 
-byDate = activityDataNARM$date
-stepsPerDay = by(activityDataNARM$steps,byDate,sum)
-hist(stepsPerDay,
-     col="red",
-     breaks=5,
-     main="Histogram of Steps per Day",
-     xlab = "Steps per Day")
-```
+    meanStepsPerDay = mean(stepsPerDay[!is.na(stepsPerDay)])
+    meanStepsPerDay
 
-![plot of chunk Display Mean/Median Steps per Day](figure/Display Mean/Median Steps per Day-1.png) 
+    ## [1] 10766.19
 
-```r
-meanStepsPerDay = mean(stepsPerDay[!is.na(stepsPerDay)])
-meanStepsPerDay
-```
+    medianStepsPerDay = median(stepsPerDay[!is.na(stepsPerDay)])
+    medianStepsPerDay
 
-```
-## [1] 10766.19
-```
+    ## [1] 10766.19
 
-```r
-medianStepsPerDay = median(stepsPerDay[!is.na(stepsPerDay)])
-medianStepsPerDay
-```
+Using this reconstruction, the mean number of steps per day is
+unchanged, but the median has become the mean. The histogram
+distribution is almost the same, except that the bin containing the mean
+has become more frequent, since we decided to classify all days where we
+had no data as 'average' days.
 
-```
-## [1] 10766.19
-```
+Are there differences in activity patterns between weekdays and weekends?
+-------------------------------------------------------------------------
 
-Using this reconstruction, the mean number of steps per day is unchanged, but the
-median has become the mean.  The histogram distribution is almost the same, except
-that the bin containing the mean has become more frequent, since we decided to 
-classify all days where we had no data as 'average' days.
+To see the difference in activity between weekdays and weekends, first
+we make a new column initialized to the factor "weekday", and set any
+observation taken on Saturday and Sunday to "weekend"
 
-## Are there differences in activity patterns between weekdays and weekends?
+    activityDataNARM$isWeekend = as.factor("weekday")
+    levels(activityDataNARM$isWeekend) = c("weekday","weekend")
 
-To see the difference in activity between weekdays and weekends, first we make a
-new column initialized to the factor "weekday", and set any observation
-taken on Saturday and Sunday to "weekend"
+    activityDataNARM$isWeekend[weekdays(activityDataNARM$date) == as.factor("Saturday")] = as.factor("weekend")
+    activityDataNARM$isWeekend[weekdays(activityDataNARM$date) == as.factor("Sunday")] = as.factor("weekend")
 
+Now that we can tell the weekdays from the weekends, let's make a
+time-series plot for each factor, and compare the activity levels.
 
-```r
-activityDataNARM$isWeekend = as.factor("weekday")
-levels(activityDataNARM$isWeekend) = c("weekday","weekend")
+    byIntervalAndWeekend = activityDataNARM[,c("interval","isWeekend")]
+    meanStepsPerInterval = tapply(activityDataNARM$steps,byIntervalAndWeekend,mean)
 
-activityDataNARM$isWeekend[weekdays(activityDataNARM$date) == as.factor("Saturday")] = as.factor("weekend")
-activityDataNARM$isWeekend[weekdays(activityDataNARM$date) == as.factor("Sunday")] = as.factor("weekend")
-```
+    par(mfrow = c(2,1))
+    plot(row.names(meanStepsPerInterval),meanStepsPerInterval[,"weekday"],
+         type="l",
+         lwd=3,
+         main = "Average Steps (Weekday)",
+         xlab = "Time Interval (hhmm)",
+         ylab = "# Steps",
+         col="red")
 
-Now that we can tell the weekdays from the weekends, let's make a time-series plot for each factor, and compare the activity levels.
+    plot(row.names(meanStepsPerInterval),meanStepsPerInterval[,"weekend"],
+         type="l",
+         lwd=3,
+         main = "Average Steps (Weekend)",
+         xlab = "Time Interval (hhmm)",
+         ylab = "# Steps",
+         col="blue")
 
+    box(which = "outer",col = "black")
 
-```r
-byIntervalAndWeekend = activityDataNARM[,c("interval","isWeekend")]
-meanStepsPerInterval = tapply(activityDataNARM$steps,byIntervalAndWeekend,mean)
+![](PA1_template_files/figure-markdown_strict/Show%20Weekdays%20vs%20Weekends%20Panel-1.png)
 
-plot(row.names(meanStepsPerInterval),meanStepsPerInterval[,"weekday"],
-     type="l",
-     lwd=3,
-     main = "Average Number of Steps by Time of Day",
-     xlab = "Time Interval (hhmm)",
-     ylab = "Average Number of Steps",
-     col="red")
+It looks like there is some difference in activity level between
+weekdays and weekends. To better illustrate this let's plot these
+time-series together on one set of axes.
 
-lines(row.names(meanStepsPerInterval),meanStepsPerInterval[,"weekend"],
-      lwd=3,
-      col="blue")
+    plot(row.names(meanStepsPerInterval),meanStepsPerInterval[,"weekday"],
+         type="l",
+         lwd=3,
+         main = "Average Number of Steps by Time of Day",
+         xlab = "Time Interval (hhmm)",
+         ylab = "# Steps",
+         col="red")
 
-legend("topright",c("Weekday","Weekend"),
-       lty=c(1,1),
-       col=c("Red","Blue"),
-       bty="n")
-```
+    lines(row.names(meanStepsPerInterval),meanStepsPerInterval[,"weekend"],
+          lwd=3,
+          col="blue")
 
-![plot of chunk Show Weekdays vs Weekends](figure/Show Weekdays vs Weekends-1.png) 
+    legend("topright",c("Weekday","Weekend"),
+           lty=c(1,1),
+           col=c("Red","Blue"),
+           bty="n")
 
-It appears that the subject makes a point to do some walking in the morning around 8:30am
-on weekdays and weekends.  However, they move more consistently on weekends throughout the
-day, whereas on weekdays the steps are more concentrated in the morning and afternoon.
-This could be explained by the subject being at work or school during the day on weekends.
+![](PA1_template_files/figure-markdown_strict/Show%20Weekdays%20vs%20Weekends%20Together-1.png)
+
+It appears that the subject makes a point to do some walking in the
+morning around 8:30am on weekdays and weekends. However, they move more
+consistently on weekends throughout the day, whereas on weekdays the
+steps are more concentrated in the morning and afternoon. This could be
+explained by the subject being at work or school during the day on
+weekdays.
